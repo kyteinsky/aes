@@ -1,6 +1,6 @@
 import pandas as pd
-import config
+from config import *
 
-data_ds = pd.loadcsv(dataset_dir + 'data_1.csv', usecols=list(range(1,16,1)))
+data_ds = pd.read_csv(dataset_dir + 'data_1.csv', usecols=list(range(1,17,1)))
 
-data_ds.head()
+print(data_ds.head())
