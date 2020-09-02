@@ -5,8 +5,9 @@ import pandas as pd
 from config import *
 from data_handler import *
 import torch as t
-from model import Model, loss_fn
-from data_handler import *
+from model import Model
+
+# from pytorch_model_summary import summary
 
 '''
 ## ----- DATALOADING ----- ##
@@ -24,38 +25,16 @@ y = t.tensor(data_ds.values, dtype=t.int32)
 
 # set the device to be used
 device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
+device = 'cpu'
 
-net = Model()#.to(device) # get the model instance
+net = Model().to(device) # get the model instance
 # print(net)
+# print()
+# print(summary(net, t.zeros((1, 1, 16)), show_input=True))
 
-input = t.tensor([[[
-    [23,124,66,94],
-    [244,62,85,188],
-    [45,173,48,87],
-    [90,81,211,64]
-]]], dtype=t.float32)
-print(input)
-out = net(input)
-print(out)
 
-loss = loss_fn(out, 
-        t.tensor([[0, 1, 1, 1, 0, 1, 1, 0], 
-                    [0, 1, 0, 0, 1, 0, 1, 1], 
-                    [0, 0, 1, 1, 0, 0, 0, 0], 
-                    [0, 1, 0, 0, 0, 1, 1, 0], 
-                    [0, 1, 1, 1, 1, 1, 0, 1], 
-                    [0, 0, 1, 0, 0, 1, 0, 1], 
-                    [0, 0, 1, 1, 1, 1, 0, 1], 
-                    [0, 1, 1, 0, 1, 1, 1, 0], 
-                    [0, 1, 1, 1, 1, 1, 0, 0], 
-                    [1, 1, 1, 1, 0, 1, 1, 0], 
-                    [0, 0, 1, 0, 1, 0, 0, 1], 
-                    [0, 1, 1, 1, 1, 1, 0, 0], 
-                    [0, 1, 0, 0, 0, 1, 0, 1], 
-                    [0, 1, 0, 1, 1, 0, 0, 1], 
-                    [0, 1, 0, 1, 0, 0, 1, 1], 
-                    [0, 1, 0, 0, 0, 0, 0, 0]], requires_grad=True))
-                    
+criterion = t.nn.MSELoss().to(device)
+optimizer = t.optim.Adam(model.parameters(), lr=lr)
 
-print('loss =',loss)
-t.nn.MSELoss()
+
+

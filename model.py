@@ -2,13 +2,13 @@ import torch.nn as nn
 import torch as t
 from train.config import loop
 
-def loss_fn(pred, true):
-    loss = 0
-    pred = t.flatten(pred)
-    true = t.flatten(true)
-    for _,i in enumerate(pred):
-        loss += 1 if true[_] != i else 0
-    return loss
+# def loss_fn(pred, true):
+#     loss = t.tensor(0, dtype=t.float32, requires_grad=True)
+#     pred = t.flatten(pred)
+#     true = t.flatten(true)
+#     for _,i in enumerate(pred):
+#         loss = t.add(loss, 1) if true[_] != i else t.add(loss, 0)
+#     return loss
 
 class Model(nn.Module):
     
@@ -40,7 +40,11 @@ class Model(nn.Module):
 
         # x = list(map(self.bin_2_hex, x))
 
-        return t.tensor(x)
+        y = t.empty((16,8))
+        for _,i in enumerate(x):
+            y[_] = i
+        
+        return y
 
 
     def regr(self, x):
@@ -53,14 +57,14 @@ class Model(nn.Module):
         x = self.swish(x) # activation
         x = self.lin3(x)
         x.squeeze_()
-        x = self.bin_activ(x)
+        # x = self.bin_activ(x)
         return x
 
 
 
     def rep(self, x, n):
         kk = t.tensor([])
-        for i in range(n+1):
+        for i in range(n):
             # a branch
             a = self.conv_ob(x)
 
@@ -72,10 +76,7 @@ class Model(nn.Module):
             # geometric mean with sign
             x = self.sqrt(t.mul(a,b))
 
-            if i > 0:
-                kk = t.cat((kk, x))
-            else:
-                continue
+            kk = t.cat((kk, x))
 
         return kk # shape = (loop, 1, 4, 4)
 
@@ -90,8 +91,9 @@ class Model(nn.Module):
     def swish(self, x):
         return x * self.sigmoid(x)
 
-    def bin_activ(self, x):
-        return [1 if i > 0 else 0 for i in x]
+    # def bin_activ(self, x):
+    #     x = x.detach().numpy()
+    #     return [1 if i > 0 else 0 for i in x]
     
     def bin_2_hex(self, x):
         return int(''.join(list(map(str, x))), 2)
