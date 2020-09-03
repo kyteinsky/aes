@@ -43,7 +43,7 @@ class Model(nn.Module):
         y = t.empty((16,8))
         for _,i in enumerate(x):
             y[_] = i
-        
+
         return y
 
 
