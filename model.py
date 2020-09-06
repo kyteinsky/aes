@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch as t
-from train.config import loop, batch_size
+from train.config import loop
 
 class Model(nn.Module):
 
@@ -8,7 +8,8 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         self.conv_ob = nn.Conv2d(1,loop,3,padding=1)
-        self.pool = nn.AdaptiveAvgPool2d((2,2))
+        # self.pool = nn.AdaptiveAvgPool3d((2,2))
+        self.pool = nn.AvgPool2d(2)
         self.batch_norm = nn.BatchNorm2d(loop)
         self.sigmoid = nn.Sigmoid()
         self.lin1 = nn.Linear(loop*16, 1200)
@@ -17,11 +18,9 @@ class Model(nn.Module):
         self.lin3 = nn.Linear(741, 240)
         self.lin4 = nn.Linear(240, 128)
 
-    def forward(self, xa):
-        with t.no_grad():
-            global x
-            x = xa.reshape(batch_size,1,4,4)
-            del xa
+    def forward(self, x):
+        batch_size = x.shape[0]
+        x = x.reshape(batch_size,1,4,4)
 
         # branch a
         a = self.conv_ob(x)
@@ -30,11 +29,12 @@ class Model(nn.Module):
 
         # branch b
         b = self.pool(x)
-        b = b.reshape(-1, loop, 1, 4)
+        b = b.reshape(batch_size, 1, 1, 4)
 
         # multiplication
         z = t.mul(a, b)
         z = z.reshape(batch_size, -1)
+        # z = t.stack((a, b))
 
         # linear block
 
