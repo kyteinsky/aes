@@ -1,7 +1,7 @@
 
 dataset_dir = 'train/dataset/'
 
-epochs = 1
+epochs = 10
 batch_size = 100
-lr = 0.001
+lr = 0.002
 loop = 100

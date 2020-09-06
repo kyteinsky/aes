@@ -10,7 +10,6 @@ def int_2_bin(xy):
         li.append([list(map(int, list(i))) for i in x])
     return li
 
-
 class dataset(Dataset):
 
     def __init__(self, data_csv, enc_csv):
@@ -57,3 +56,13 @@ class dataset(Dataset):
 #         y = self.labels[ID]
 
 #         return X, y
+
+### --- OLD --- ### ---------------
+
+# def int_2_bin(xy):
+#     li = []
+#     for x in xy:
+#         x = ['{:08b}'.format(int(i)) for i in x]
+#         li.append([list(map(int, list(i))) for i in x])
+#     return li
+### -------------------------------------

@@ -6,12 +6,16 @@ from data_handler import *
 import torch as t
 from model import Model
 from torch.utils.data import DataLoader, random_split
+from time import time
+import wandb
+wandb.init(project="sea")
+
 
 # from pytorch_model_summary import summary
 
 # set the device to be used
 device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
-device = 'cpu'
+# device = 'cpu'
 
 
 ## ----- DATALOADING ----- ##
@@ -26,43 +30,55 @@ val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=True, num_workers
 
 net = Model().to(device) # get the model instance
 print(net)
+wandb.watch(net)
 # print()
 # print(summary(net, t.zeros((1, 1, 16)), show_input=True))
 
 
-criterion = t.nn.MSELoss().to(device)
+criterion = t.nn.L1Loss().to(device)
 optimizer = t.optim.Adam(net.parameters(), lr=lr)
 
-## ------ TRAINING LOOP ------ ##
-n_total_steps = len(train_loader)
-val_iter =  iter(val_loader)
-n_val_sets = len(val_loader)
-
-flatten = t.nn.Flatten()
+val_loss = t.tensor(0).to(device)
 net.train()
 
+## -- had mistakenly ignored passing batches, instead was passing in single values, now all good!
+st = time()
+## ------ TRAINING LOOP ------ ## 
 for epoch in range(epochs):
+    val_iter =  iter(val_loader)
     for i, (x, y) in enumerate(train_loader):
-        x = x.to(device)
-        y = y.to(device)
+        with t.no_grad():
+            global x1, y1
+            x1 = x.to(device)
+            y1 = y.reshape(-1, 128).to(device)
 
-        for k in range(n_total_steps):
-            # forward pass
-            outputs = net(x[k])
-            loss = criterion(outputs, y[k])
-            
-            # backward pass
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            val_loss = t.tensor(0).to(device)
+        # forward pass
+        outputs = net(x1)
+        loss = t.exp(criterion(outputs, y1)) - 1
+
+        # backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        if (i+1) % int(len(train_loader)/len(val_loader)) == 0:
             with t.no_grad():
-                if (i+1)*(k+1) % 4 == 0:
-                    vx, vy = next(val_iter)
-                    vx, vy = vx.to(device), vy.to(device)
-                    val_loss = criterion(flatten(net(vx[k])), t.tensor(flatten(int_2_bin(vy[k])), dtype=t.float32))
+                vx, vy = next(val_iter)
+                # print(type(vy))
+                vx, vy = vx.to(device)/255.0, vy.to(device)
+                vx = net(vx)
+                val_loss = t.exp(criterion(vx.view(-1), vy.view(-1))) - 1
 
-            if (i+1) % 1 == 0:
-                print(f'Epoch [{epoch+1}/{epochs}], step [{i+1}/{n_total_steps}], loss= [{loss.item():.4f}], val_loss= [{val_loss:.4f}]')
-        
-print('Finished training')
+        if (i+1) % 10 == 0:
+            c = int((((epoch+1)*(i+1))/((epochs+1)*(len(train_loader))))*20)
+            print('['+'#'*(c)+' '*(20-c)+f']\nEpoch [{epoch+1}/{epochs}], step [{i+1}/{len(train_loader)}], loss= [{loss.item():.4f}], val_loss= [{val_loss:.4f}]', end='\r')
+            wandb.log({"Loss": loss.item(), "Validation Loss": val_loss})
+
+
+print()
+print(f'Finished training in {time() - st} s')
+
+
+# Save model to wandb
+import os
+t.save(net.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
