@@ -19,6 +19,7 @@ class Model(nn.Module):
         self.lin4 = nn.Linear(240, 128)
 
     def forward(self, x):
+        x = x.reshape(-1, 4, 4)
         batch_size = x.shape[0]
         x = x.reshape(batch_size,1,4,4)
 

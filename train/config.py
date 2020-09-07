@@ -1,8 +1,8 @@
 
-dataset_dir = 'train/dataset/'
+dataset_dir = 'train/dataset/split/'
 
-epochs = 10
-batch_size = 1000
-split = 0.8
-lr = 0.002
-loop = 100
+epochs = 2
+batch_size = 10
+lr = 0.001
+loop = 10
+wandb = False

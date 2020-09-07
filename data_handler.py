@@ -1,6 +1,7 @@
 import torch as t
 import pandas as pd
 from torch.utils.data import Dataset
+from train.config import batch_size
 
 
 def int_2_bin(xy):
@@ -13,21 +14,30 @@ def int_2_bin(xy):
 class dataset(Dataset):
 
     def __init__(self, data_csv, enc_csv):
-        usecols = list(range(17))[1:]
-        enc_df = pd.read_csv(enc_csv, usecols=usecols)
-        data_df = pd.read_csv(data_csv, usecols=usecols)
+        self.usecols = list(range(17))[1:]
+        # self.usecols = list(range(16))
+        self.enc_csv = enc_csv
+        self.data_csv = data_csv
+        # self.enc_df = iter(pd.read_csv(enc_csv, usecols=usecols, chunksize=batch_size))
+        # self.data_df = iter(pd.read_csv(data_csv, usecols=usecols, chunksize=batch_size))
 
-        self.x = t.tensor(enc_df.values, dtype=t.float32)/255.0
-        self.y = t.tensor(int_2_bin(data_df.values), dtype=t.float32)
-
-        self.length = len(data_df)
+        # self.x = t.tensor(enc_df.values, dtype=t.float32)/255.0
+        # self.y = t.tensor(int_2_bin(data_df.values), dtype=t.float32)
 
     def __len__(self):
-        return self.length
+        return batch_size
 
     def __getitem__(self, index):
-        return self.x[index], self.y[index]
 
+        data_df = pd.read_csv(self.data_csv, usecols=self.usecols, nrows=batch_size, skiprows=int(index*batch_size), header=None)
+        enc_df = pd.read_csv(self.enc_csv, usecols=self.usecols, nrows=batch_size, skiprows=int(index*batch_size), header=None)
+
+        x = t.tensor(enc_df.values, dtype=t.float32)/255.0
+        y = t.tensor(int_2_bin(data_df.values), dtype=t.float32)
+
+        print(index,' == ', self.enc_csv)
+
+        return x, y
 
 
 
