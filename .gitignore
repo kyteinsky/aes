@@ -7,3 +7,5 @@ wandb/
 .ipynb_checkpoints/
 .vscode/
 dataset/
+2t.py
+test.py
