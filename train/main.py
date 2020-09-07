@@ -7,6 +7,7 @@ import torch as t
 from model import Model
 from torch.utils.data import DataLoader, random_split
 from time import time
+from tqdm import trange
 if wandb:
     import wandb
     wandb.init(project="sea")
@@ -16,7 +17,7 @@ if wandb:
 
 # set the device to be used
 device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
-device = 'cpu'
+# device = 'cpu'
 
 
 ## ----- DATALOADING ----- ##
@@ -24,8 +25,8 @@ train_ds = dataset(dataset_dir+'train_data_1.csv', dataset_dir+'train_enc_values
 val_ds = dataset(dataset_dir+'val_data_1.csv', dataset_dir+'val_enc_values_1.csv')
 # train_ds, val_ds = random_split(ds, [int(split*len(ds)), int(float('%.1f'%(1-split))*len(ds))], generator=t.Generator().manual_seed(42))
 
-train_loader = DataLoader(train_ds, shuffle=True)
-val_loader = DataLoader(val_ds, shuffle=True)
+train_loader = DataLoader(train_ds)#, shuffle=True)
+val_loader = DataLoader(val_ds)#, shuffle=True)
 ## ------------------------ ##
 
 
@@ -48,7 +49,7 @@ st = time()
 ## ------ TRAINING LOOP ------ ## 
 for epoch in range(epochs):
     val_iter =  iter(val_loader)
-    for i, (x1, y1) in enumerate(train_loader):
+    for i, (x1, y1) in zip(range(len(train_loader)), train_loader):
         x1 = x1.to(device)
         y1 = y1.reshape(-1, 128).to(device)
 
@@ -76,6 +77,8 @@ for epoch in range(epochs):
             print(f'Epoch [{epoch+1}/{epochs}], step [{i+1}/{len(train_loader)}], loss= [{loss.item():.4f}], val_loss= [{val_loss:.4f}]')#, end='\r')
             if wandb:
                 wandb.log({"Loss": loss.item(), "Validation Loss": val_loss})
+    #     break
+    # break
 # ['+'#'*(c)+' '*(20-c)+f'] == 
 
 print()

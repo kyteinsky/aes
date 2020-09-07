@@ -2,6 +2,7 @@ import torch as t
 import pandas as pd
 from torch.utils.data import Dataset
 from train.config import batch_size
+from pandas.core.common import flatten
 
 
 def int_2_bin(xy):
@@ -18,6 +19,12 @@ class dataset(Dataset):
         # self.usecols = list(range(16))
         self.enc_csv = enc_csv
         self.data_csv = data_csv
+
+        len_enc = sum(1 for line in open(self.enc_csv))
+        self.l = list(range(len_enc))
+        batch_list = [self.l[i:i + batch_size] for i in range(0, len(self.l), batch_size)]
+        self.length = len(batch_list)
+
         # self.enc_df = iter(pd.read_csv(enc_csv, usecols=usecols, chunksize=batch_size))
         # self.data_df = iter(pd.read_csv(data_csv, usecols=usecols, chunksize=batch_size))
 
@@ -25,17 +32,17 @@ class dataset(Dataset):
         # self.y = t.tensor(int_2_bin(data_df.values), dtype=t.float32)
 
     def __len__(self):
-        return batch_size
+        return self.length
 
     def __getitem__(self, index):
-
-        data_df = pd.read_csv(self.data_csv, usecols=self.usecols, nrows=batch_size, skiprows=int(index*batch_size), header=None)
-        enc_df = pd.read_csv(self.enc_csv, usecols=self.usecols, nrows=batch_size, skiprows=int(index*batch_size), header=None)
+        batch_list = [self.l[i:i + batch_size] for i in range(0, len(self.l), batch_size)]
+        batch_list.remove(batch_list[index])
+        
+        data_df = pd.read_csv(self.data_csv, usecols=self.usecols, nrows=batch_size, skiprows=list(flatten(batch_list)), header=None)
+        enc_df = pd.read_csv(self.enc_csv, usecols=self.usecols, nrows=batch_size, skiprows=list(flatten(batch_list)), header=None)
 
         x = t.tensor(enc_df.values, dtype=t.float32)/255.0
         y = t.tensor(int_2_bin(data_df.values), dtype=t.float32)
-
-        print(index,' == ', self.enc_csv)
 
         return x, y
 

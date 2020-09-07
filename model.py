@@ -19,9 +19,9 @@ class Model(nn.Module):
         self.lin4 = nn.Linear(240, 128)
 
     def forward(self, x):
-        x = x.reshape(-1, 4, 4)
-        batch_size = x.shape[0]
-        x = x.reshape(batch_size,1,4,4)
+        # x = x.reshape(-1, 4, 4)
+        # batch_size = x.shape[0]
+        x = x.reshape(-1,1,4,4)
 
         # branch a
         a = self.conv_ob(x)
@@ -30,11 +30,11 @@ class Model(nn.Module):
 
         # branch b
         b = self.pool(x)
-        b = b.reshape(batch_size, 1, 1, 4)
+        b = b.reshape(-1, 1, 1, 4)
 
         # multiplication
         z = t.mul(a, b)
-        z = z.reshape(batch_size, -1)
+        z = z.reshape(-1, a[0].view(-1).shape[0])
         # z = t.stack((a, b))
 
         # linear block
