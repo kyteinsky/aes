@@ -10,7 +10,7 @@ from time import time
 from tqdm import trange
 if wandb:
     import wandb
-    wandb.init(project="sea")
+    wandb.init(project="sea-gcp")
 
 
 # from pytorch_model_summary import summary
@@ -84,8 +84,11 @@ for epoch in range(epochs):
 print()
 print(f'Finished training in {time() - st} s')
 
+t.save(net.state_dict(), '.')
+print('model saved in GCP! safe now.')
 
 if wandb:
     # Save model to wandb
     import os
     t.save(net.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
+remotedesktop.google.com
