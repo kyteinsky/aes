@@ -9,3 +9,4 @@ wandb/
 dataset/
 2t.py
 test.py
+*.csv
