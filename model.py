@@ -19,8 +19,6 @@ class Model(nn.Module):
         self.lin4 = nn.Linear(240, 128)
 
     def forward(self, x):
-        # x = x.reshape(-1, 4, 4)
-        # batch_size = x.shape[0]
         x = x.reshape(-1,1,4,4)
 
         # branch a
@@ -35,17 +33,10 @@ class Model(nn.Module):
         # multiplication
         z = t.mul(a, b)
         z = z.reshape(-1, a[0].view(-1).shape[0])
-        # z = t.stack((a, b))
 
-        # linear block
+        z = self.regr(z)
 
-        # y = t.tensor(list(map(self.regr, x)), requires_grad=True, dtype=t.float32, device=x.device)
-        # y = t.empty((batch_size, 128))
-        # y.retain_grad = True
-        
-        y = t.stack(list(map(self.regr, z)))
-
-        return y
+        return z
 
 
     def regr(self, x):
@@ -59,5 +50,3 @@ class Model(nn.Module):
 
     def swish(self, x):
         return x * self.sigmoid(x)
-
-

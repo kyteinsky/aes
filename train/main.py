@@ -10,7 +10,7 @@ from time import time
 from tqdm import trange
 if wandb:
     import wandb
-    wandb.init(project="sea-gcp")
+    wandb.init(project="sea-custom")
 
 
 # from pytorch_model_summary import summary
@@ -25,8 +25,8 @@ train_ds = dataset(dataset_dir+'train_data_1.csv', dataset_dir+'train_enc_values
 val_ds = dataset(dataset_dir+'val_data_1.csv', dataset_dir+'val_enc_values_1.csv')
 # train_ds, val_ds = random_split(ds, [int(split*len(ds)), int(float('%.1f'%(1-split))*len(ds))], generator=t.Generator().manual_seed(42))
 
-train_loader = DataLoader(train_ds)#, shuffle=True)
-val_loader = DataLoader(val_ds)#, shuffle=True)
+train_loader = DataLoader(train_ds, shuffle=True, batch_size=batch_size)
+val_loader = DataLoader(val_ds, shuffle=True, batch_size=batch_size)
 ## ------------------------ ##
 
 
@@ -85,10 +85,10 @@ print()
 print(f'Finished training in {time() - st} s')
 
 t.save(net.state_dict(), '.')
-print('model saved in GCP! safe now.')
+print('model saved in some where! safe now.')
 
 if wandb:
     # Save model to wandb
     import os
     t.save(net.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
-remotedesktop.google.com
+
