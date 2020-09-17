@@ -49,15 +49,15 @@ st = time()
 ## ------ TRAINING LOOP ------ ## 
 for epoch in range(epochs):
     val_iter =  iter(val_loader)
-    for i, (x1, y1) in zip(range(len(train_loader)), train_loader):
+    for i, (x1, y1) in enumerate(train_loader):
         x1 = x1.to(device)
         y1 = y1.reshape(-1, 128).to(device)
+        
 
 
         # forward pass
         outputs = net(x1)
         loss = criterion(outputs, y1)
-        loss = loss * t.exp(loss)
 
         # backward pass
         optimizer.zero_grad()
@@ -70,7 +70,6 @@ for epoch in range(epochs):
                 vx, vy = vx.to(device)/255.0, vy.to(device)
                 vx = net(vx)
                 val_loss = criterion(vx.view(-1), vy.view(-1))
-                val_loss = val_loss * t.exp(val_loss)
 
         if (i+1) % 1 == 0:
             # c = int((((epoch+1)*((i+1)+epoch*len(train_loader)))/((epochs+1)*(len(train_loader))))*20)
@@ -84,8 +83,10 @@ for epoch in range(epochs):
 print()
 print(f'Finished training in {time() - st} s')
 
-t.save(net.state_dict(), '.')
-print('model saved in some where! safe now.')
+value = input('Do you want to save model? (y/N): ')
+if value == 'y' or value == 'Y': 
+    t.save(net.state_dict(), './')
+    print('model saved some where! safe now.')
 
 if wandb:
     # Save model to wandb

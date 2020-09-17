@@ -11,12 +11,13 @@ class Model(nn.Module):
         # self.pool = nn.AdaptiveAvgPool3d((2,2))
         self.pool = nn.AvgPool2d(2)
         self.batch_norm = nn.BatchNorm2d(loop)
-        self.sigmoid = nn.Sigmoid()
-        self.lin1 = nn.Linear(loop*16, 1200)
-        self.lin2 = nn.Linear(1200, 741)
-        self.norm_lin = nn.LayerNorm(741)
-        self.lin3 = nn.Linear(741, 240)
-        self.lin4 = nn.Linear(240, 128)
+        self.lin1 = nn.Linear(loop*16, 2048)
+        self.norm_lin1 = nn.LayerNorm(2048)
+        self.lin2 = nn.Linear(2048, 1024)
+        self.norm_lin2 = nn.LayerNorm(1024)
+        self.lin3 = nn.Linear(1024, 512)
+        self.norm_lin3 = nn.LayerNorm(512)
+        self.lin4 = nn.Linear(512, 128)
 
     def forward(self, x):
         x = x.reshape(-1,1,4,4)
@@ -36,17 +37,29 @@ class Model(nn.Module):
 
         z = self.regr(z)
 
+        # z = self.binarizer(z)
+
         return z
 
 
     def regr(self, x):
         x = self.swish(self.lin1(x))
-        x = self.lin2(x)
-        x = self.norm_lin(x)
+        # x = self.norm_lin1(x)
+        x = t.relu(self.lin2(x))
+        x = self.norm_lin2(x)
         x = self.swish(self.lin3(x))
+        # x = self.norm_lin3(x)
         x = self.lin4(x)
         return x
 
 
     def swish(self, x):
-        return x * self.sigmoid(x)
+        return x * t.sigmoid(x)
+
+    def binarizer(self, x):
+        return 1/(1+(t.exp(-1000*x+500)))
+
+# net = Model()
+# inp = t.randn(2,1,4,4)
+# print(inp)
+# print(net(inp).shape)

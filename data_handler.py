@@ -26,11 +26,11 @@ class dataset(Dataset):
         self.enc_csv = enc_csv
         self.data_csv = data_csv
 
-        data_df = pd.read_csv(self.data_csv, header=None)
-        enc_df = pd.read_csv(self.enc_csv, header=None)
+        data_df = pd.read_csv(self.data_csv, header=None, usecols=self.usecols)
+        enc_df = pd.read_csv(self.enc_csv, header=None, usecols=self.usecols)
 
         self.x = scale(toTensor(enc_df.values))
-        self.y = toTensor(data_df.values)
+        self.y = toTensor(int_2_bin(data_df.values))
 
         self.length = self.x.shape[0]
 
@@ -38,4 +38,4 @@ class dataset(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        return self.x, self.y
+        return self.x[index], self.y[index]
